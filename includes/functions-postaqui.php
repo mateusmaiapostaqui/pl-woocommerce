@@ -261,9 +261,7 @@ function postaqui_get_metodos_de_entrega($cep_destinatario)
  */
 function postaqui_enqueue_scripts()
 {
-    wp_enqueue_script('auge_jquery_masks',plugins_url()."/woocommerce-postaqui/assets/jquery.mask.min.js",array(),false,true);
-	wp_enqueue_script('auge_jquery_mask_formats',plugins_url()."/woocommerce-postaqui/assets/auge_masks.js",array(),false,true);
-	wp_enqueue_script('postaqui_scripts',plugins_url()."/woocommerce-postaqui/assets/postaqui.js",array(),false,true);
+    wp_enqueue_script('postaqui_scripts', plugins_url() . "/woocommerce-postaqui/assets/postaqui.js", array(), false, true);
 }
 add_action('wp_enqueue_scripts', 'postaqui_enqueue_scripts');
 add_action('admin_enqueue_scripts', 'postaqui_enqueue_scripts');

@@ -70,7 +70,7 @@ function woocommerce_postaqui_init()
                         'title' => __('CEP de origem para cálculo'),
                         'type' => 'text',
                         'default' => '00000-000',
-                        'class' => 'au_mask_zip_code',
+                        'class' => 'postaqui_mask_zip_code',
                         'description' => 'Peso mínimo para o cliente poder escolher esta modalidade'
                     ],
                     'show_delivery_time' => [
@@ -308,7 +308,7 @@ function woocommerce_postaqui_init()
                         <form method='post' action='{$product_link}' id='postaqui_shipping_forecast'>
                             <div class=''>
                                 <div class='as-col-md-3 as-col-sm-4 as-col-xs-12'>
-                                    <input type='text' value='{$target_zip_code}' class=au_mask_zip_code' name='postaqui_forecast_zip_code' />
+                                    <input type='text' value='{$target_zip_code}' class=postaqui_mask_zip_code' name='postaqui_forecast_zip_code' />
                                 </div>
                                 <div class='as-col-md-9 as-col-sm-8 as-col-xs-12'>
                                     <button type='submit' id='postaqui_shipping_forecast_submit' class='single_add_to_cart_button button alt'>Calcular frete</button>
