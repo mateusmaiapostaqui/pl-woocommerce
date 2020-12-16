@@ -22,6 +22,8 @@ define('WC_POSTAQUI_DIR', plugin_dir_path(__FILE__));
 define('WC_POSTAQUI_REQUIRED_VERSION', '4.9.5');
 
 if (!class_exists('WC_woocommerce_postaqui')) {
+    include_once WC_POSTAQUI_DIR . "/includes/class-api-postaqui.php";
+    include_once WC_POSTAQUI_DIR . "/includes/functions-postaqui.php";
     include_once WC_POSTAQUI_DIR . '/includes/class-wc-postaqui.php';
 }
 
@@ -39,4 +41,5 @@ function wc_postaqui_activation()
     if (!function_exists('curl_version')) {
         wp_die("Para a utilização deste plugin é obrigatória a habilitação da extensão CURL do PHP");
     }
+
 }
