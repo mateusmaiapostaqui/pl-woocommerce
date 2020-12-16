@@ -1,95 +1,95 @@
-<?php 
+<?php
 
 class Postaqui{
 
-	protected $token;
-	protected $source_zip_code;
-	protected $target_zip_code;
-	protected $weight;
-	protected $length;
-	protected $height;
-	protected $width;
-	protected $rates;
-	protected $package_value;
+    protected $token;
+    protected $source_zip_code;
+    protected $target_zip_code;
+    protected $weight;
+    protected $length;
+    protected $height;
+    protected $width;
+    protected $rates;
+    protected $package_value;
 
-	private $postaqui_url = "http://api.postaquilogistica.com.br:3100/";
+    private $postaqui_url = "http://api.postaquilogistica.com.br:3100/";
 
-	public function __construct($token){
-		$this->token = $token;
-	}
+    public function __construct($token){
+        $this->token = $token;
+    }
 
-	private function call_curl($type,$url,$parms){	
+    private function call_curl($type,$url,$parms){
 
-		$headers = [
-			"Authorization: " .$this->token,
-			'Content-Type: application/json',
-			'Accept-Charset: utf-8',
-		];		
-		
-		$params_fmt = json_encode($parms);		
+        $headers = [
+            "Authorization: " .$this->token,
+            'Content-Type: application/json',
+            'Accept-Charset: utf-8',
+        ];
 
-		$curl_url = $this->postaqui_url.$url;
-		
-		$process = curl_init();
+        $params_fmt = json_encode($parms);
 
-		curl_setopt($process, CURLOPT_FRESH_CONNECT, true);
-		curl_setopt($process, CURLOPT_HTTPHEADER,$headers);
-		curl_setopt($process, CURLOPT_POST, 1);
-		curl_setopt($process, CURLOPT_RETURNTRANSFER,true);
-		curl_setopt($process, CURLOPT_TIMEOUT,0);
-		curl_setopt($process, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-		curl_setopt($process, CURLOPT_POSTFIELDS, $params_fmt);		
-		curl_setopt($process, CURLOPT_HEADER, false);		
-		curl_setopt($process,CURLOPT_URL,$curl_url);
+        $curl_url = $this->postaqui_url.$url;
 
-		$return = curl_exec($process);
+        $process = curl_init();
 
-		$status = curl_getinfo($process,CURLINFO_HTTP_CODE);
+        curl_setopt($process, CURLOPT_FRESH_CONNECT, true);
+        curl_setopt($process, CURLOPT_HTTPHEADER,$headers);
+        curl_setopt($process, CURLOPT_POST, 1);
+        curl_setopt($process, CURLOPT_RETURNTRANSFER,true);
+        curl_setopt($process, CURLOPT_TIMEOUT,0);
+        curl_setopt($process, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($process, CURLOPT_POSTFIELDS, $params_fmt);
+        curl_setopt($process, CURLOPT_HEADER, false);
+        curl_setopt($process,CURLOPT_URL,$curl_url);
+
+        $return = curl_exec($process);
+
+        $status = curl_getinfo($process,CURLINFO_HTTP_CODE);
 
         if ($status==0) return ['error'=>1, 'message' => 'Não foi possível conectar-se com o Postaqui. Tente novamente mais tarde'];
 
-		if ($status > 400){
+        if ($status > 400){
                 if ($status==401) return ['error'=>401, 'message' => 'Acesso não autorizado. Verifique se o seu token foi preenchido corretamente ou fale com a Postaqui'];
                 $message = curl_error($process);
-                curl_close($process);                   
-                return ['error'=>$status, 'message' => $message];                            
+                curl_close($process);
+                return ['error'=>$status, 'message' => $message];
         }
 
         $return_decode = json_decode($return);
-        if (isset($return_decode->data->error)){            
-            return ['error'=>$return_decode->data->error, 'message'=>$return_decode->data->message];                            
+        if (isset($return_decode->data->error)){
+            return ['error'=>$return_decode->data->error, 'message'=>$return_decode->data->message];
         }
 
-		curl_close($process);	
-		return json_decode($return);
-	}
+        curl_close($process);
+        return json_decode($return);
+    }
 
-	public function calculate_shipping(){
+    public function calculate_shipping(){
 
-		$data = [
-			'cepOrigem' => $this->source_zip_code,
-			'cepDestino' => $this->target_zip_code,
-			'peso' => $this->weight,
-			'valorDeclarado' => $this->package_value,
-			'altura'	=> $this->height,
-			'largura'	=> $this->width,
-			'comprimento' => $this->length
-		];
+        $data = [
+            'cepOrigem' => $this->source_zip_code,
+            'cepDestino' => $this->target_zip_code,
+            'peso' => $this->weight,
+            'valorDeclarado' => $this->package_value,
+            'altura'	=> $this->height,
+            'largura'	=> $this->width,
+            'comprimento' => $this->length
+        ];
         // echo "<pre>";print_r($data);echo "</pre>";die();
-		$return = $this->call_curl('POST','shipping-company/calc-price-deadline',$data);
-		$this->rates = [];
-		
-		if ($return != []){
-            if (is_array($return) && isset($return['error'])){
-                $this->rates = (object)$return;            
-            } else {
-                $this->rates = $return->data;    
-            }			
-		}
+        $return = $this->call_curl('POST','shipping-company/calc-price-deadline',$data);
+        $this->rates = [];
 
-		return;
-		
-	}
+        if ($return != []){
+            if (is_array($return) && isset($return['error'])){
+                $this->rates = (object)$return;
+            } else {
+                $this->rates = $return->data;
+            }
+        }
+
+        return;
+
+    }
 
     public function send_labels($label_data){
 
@@ -97,7 +97,7 @@ class Postaqui{
         return (object)$return;
     }
 
-	private function arrayToParams($array, $prefix = null){
+    private function arrayToParams($array, $prefix = null){
         if (!is_array($array)) {
             return $array;
         }
@@ -118,7 +118,7 @@ class Postaqui{
             }
         }
         return implode('&', $params);
-    }	
+    }
 
     /**
      * @return mixed
@@ -209,26 +209,24 @@ class Postaqui{
     }
 
     public function setPackageValue($value){
-    	$this->package_value = $value;
+        $this->package_value = $value;
     }
 
     public function setHeight($height){
-    	$this->height = $height;
+        $this->height = $height;
     }
 
     public function setWidth($width){
-    	$this->width = $width;
+        $this->width = $width;
     }
 
     public function setLength($length){
-    	$this->length = $length;
+        $this->length = $length;
     }
 
     private function only_numbers($val){
-    	return preg_replace("/[^0-9]/","",$val);
+        return preg_replace("/[^0-9]/","",$val);
     }
 
 
 }
-
-?>
