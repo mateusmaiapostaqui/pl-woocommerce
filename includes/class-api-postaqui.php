@@ -217,7 +217,7 @@ class Postaqui
      * @param string $prefix
      * @return string
      */
-    private function array_to_params($array, $prefix = null)
+    public function array_to_params($array, $prefix = null)
     {
 
         if (!is_array($array)) {

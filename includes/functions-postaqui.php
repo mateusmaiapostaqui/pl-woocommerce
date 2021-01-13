@@ -227,7 +227,7 @@ function postaqui_get_metodos_de_entrega($cep_destinatario)
 
             // Frete Grátis
             // if (get_class($shipping_method) == 'WC_Shipping_Free_Shipping') {
-            //     if ($this->options['exibir_frete_gratis'] == 'true') {
+            //     if ($shipping_method->options['exibir_frete_gratis'] == 'true') {
             //         if ($cep_destinatario_permitido) {
             //             if (empty($shipping_method->requires)) {
             //                 $metodos_de_entrega['frete_gratis'] = 'sim';
@@ -261,20 +261,23 @@ function postaqui_get_metodos_de_entrega($cep_destinatario)
  */
 function postaqui_enqueue_scripts()
 {
-    wp_enqueue_script('postaqui_scripts', plugins_url() . "/woocommerce-postaqui/assets/postaqui.js", array(), false, true);
+    wp_enqueue_script('postaqui_scripts', WC_POSTAQUI_DIR_URL. "/assets/postaqui.js", array(), false, true);
 }
 add_action('wp_enqueue_scripts', 'postaqui_enqueue_scripts');
 add_action('admin_enqueue_scripts', 'postaqui_enqueue_scripts');
 
 /**
- * Print shipping estimation on product page
+ * Print shipping form and estimation on product page
  * @return void
  */
 function postaqui_shipping_forecast_on_product_page()
 {
+    global $product;
     global $woocommerce;
 
-    if (!is_product()) return;
+    if( !is_product() ){
+        return;
+    }
 
     if (isset($_POST['postaqui_forecast_zip_code'])) {
         $target_zip_code = $_POST['postaqui_forecast_zip_code'];
@@ -287,9 +290,13 @@ function postaqui_shipping_forecast_on_product_page()
         }
     }
 
+    $request_shipping = isset($_POST['postaqui_forecast_zip_code']) ? true : false;
     $metodos_de_entrega = postaqui_get_metodos_de_entrega($target_zip_code);
 
-    if (count($metodos_de_entrega) == 0) return;
+    // PostAqui shipping not found
+    if (count($metodos_de_entrega) == 0){
+        return;
+    }
 
     foreach ($metodos_de_entrega as $metodo) {
         if (is_object($metodo) && get_class($metodo) == "WC_woocommerce_postaqui") {
@@ -298,7 +305,144 @@ function postaqui_shipping_forecast_on_product_page()
         }
     }
 
-    $postaqui_class->forecast_shipping();
+    if ($postaqui_class->instance_settings['enabled'] != 'yes') return;
+    if ($postaqui_class->instance_settings['show_estimate_on_product_page'] != 'yes') return;
+
+    $token = $postaqui_class->instance_settings['token'];
+    $height = (int)preg_replace("/[^0-9]/", "", $product->get_height());
+    $width = (int)preg_replace("/[^0-9]/", "", $product->get_width());
+    $length = (int)preg_replace("/[^0-9]/", "", $product->get_length());
+
+    $dimensions = [];
+    $dimensions[] = wc_get_dimension($length, 'cm');
+    $dimensions[] = wc_get_dimension($width, 'cm');
+    $dimensions[] = wc_get_dimension($height, 'cm');
+
+    sort($dimensions);
+
+    $length = $postaqui_class->min_package_length($dimensions[2]);
+    $width = $postaqui_class->min_package_width($dimensions[1]);
+    $height = $postaqui_class->min_package_height($dimensions[0]);
+
+    $weight = wc_get_weight($product->get_weight(), 'kg');
+    $price = $product->get_price();
+
+    if ($weight == 0 || $height == 0 || $width == 0 || $length == 0){
+        return;
+    }
+
+    $rates = [];
+
+    if (trim($target_zip_code) != "" && $request_shipping ){
+
+        $show_delivery_time = $postaqui_class->instance_settings['show_delivery_time'];
+        $target_zip_code = preg_replace("/[^0-9]/", "", $target_zip_code);
+        $source_zip_code = preg_replace("/[^0-9]/", "", $postaqui_class->instance_settings['source_zip_code']);
+        // $source_zip_code = get_option('woocommerce_store_postcode');
+
+        $postaqui = new Postaqui($token);
+        $postaqui->set_weight($weight);
+        $postaqui->set_source_zip_code($source_zip_code);
+        $postaqui->set_target_zip_code($target_zip_code);
+        $postaqui->set_package_value($price);
+        $postaqui->set_width($width);
+        $postaqui->set_height($height);
+        $postaqui->set_length($length);
+
+        $postaqui->calculate_shipping();
+        $received_rates = $postaqui->get_rates();
+
+        if (isset($received_rates->error)) {
+            echo "<pre>";
+            echo "<p>" . $received_rates->message . "</p>";
+            echo "</pre>";
+            return;
+        }
+
+        if (count($received_rates) != 0){;
+            foreach ($received_rates as $rate) {
+
+                $prazo_texto = ('yes' === $show_delivery_time) ? " (" . $rate->deadline . ")" : "";
+
+                $rate_item = [];
+                $rate_item['label'] = $rate->name . $prazo_texto;
+                $rate_item['cost'] = wc_price($rate->price_finish);
+
+                $rates[] = $rate_item;
+
+            }
+        }
+
+    }
+    ?>
+    <style>
+    .postaqui_product_form {
+        padding-top: 20px;
+    }
+    .postaqui_product_form form {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .postaqui_product_form_group {
+        flex: 0 1 auto;
+    }
+    .postaqui_product_form input {
+        width: 100%;
+        max-width: 100px;
+        text-align: center;
+    }
+    .postaqui_product_rates table {
+        padding: 20px 0px;
+        width: 100%;
+    }
+    .woocommerce div.product form.cart div.quantity,
+    .woocommerce div.product form.cart .button {
+        top: auto;
+    }
+    </style>
+    <div style='clear:both;'></div>
+    <div class='postaqui_product_form'>
+
+        <form method='POST' action='<?php $product->get_permalink() ?>'>
+            <div class="postaqui_product_form_group">
+                <input
+                    type='text'
+                    value='<?php echo $target_zip_code ?>'
+                    class='postaqui_mask_zip_code'
+                    name='postaqui_forecast_zip_code'
+                    placeholder="00000-000" />
+            </div>
+            <div class="postaqui_product_form_group">
+                <button type='submit'
+                    class='single_add_to_cart_button button alt'>
+                    Calcular frete
+                </button>
+            </div>
+        </form>
+
+        <div class='postaqui_product_rates'>
+            <?php if( $rates ): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Modalidade de envio pelo Postaqui</th>
+                        <th>Custo estimado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($rates as $rate): ?>
+                        <tr>
+                            <td><?php echo $rate['label'] ?></td>
+                            <td><?php echo $rate['cost'] ?></td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+            <?php endif ?>
+        </div>
+
+    </div>
+    <?php
 }
 add_action('woocommerce_after_add_to_cart_form', 'postaqui_shipping_forecast_on_product_page', 50);
 

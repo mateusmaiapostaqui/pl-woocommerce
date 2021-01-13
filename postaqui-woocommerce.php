@@ -19,6 +19,7 @@ if (!defined('ABSPATH')) {
 define('WC_POSTAQUI_VERSION', '1.1.0');
 define('WC_POSTAQUI_PLUGIN_FILE', __FILE__);
 define('WC_POSTAQUI_DIR', plugin_dir_path(__FILE__));
+define('WC_POSTAQUI_DIR_URL', plugin_dir_url(__FILE__));
 define('WC_POSTAQUI_REQUIRED_VERSION', '4.9.5');
 
 if (!class_exists('WC_woocommerce_postaqui')) {
