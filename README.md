@@ -34,7 +34,7 @@ Integre sua loja com as principais transportadoras do mercado
 ### Instalação
 
 1) Baixe o módulo a partir deste repositório para sua máquina;
-2) Crie a pasta ``wp-content/plugins/woocommerce-postaqui`` e cole os arquivos e pastas do módulo;
+2) Crie a pasta ``wp-content/plugins/postaqui-woocommerce`` e cole os arquivos e pastas do módulo;
 3) Faça login no Wordpress e ative o plugin.
 
 ### Configuração
