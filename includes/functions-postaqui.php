@@ -425,7 +425,7 @@ function postaqui_shipping_forecast_on_product_page()
             <table>
                 <thead>
                     <tr>
-                        <th>Modalidade de envio pelo Postaqui</th>
+                        <th>Modalidade de envio</th>
                         <th>Custo estimado</th>
                     </tr>
                 </thead>
@@ -461,7 +461,7 @@ function postaqui_shipping_delivery_estimate($shipping_method)
     $estimate = isset($meta_data['_postaqui_delivery_estimate']) ? intval($meta_data['_postaqui_delivery_estimate']) : 0;
 
     if ($estimate) {
-        echo "<p><small>Entrega pelo Postaqui em {$estimate} dias úteis</small></p>";
+        echo "<p><small>Entrega em {$estimate} dias úteis</small></p>";
     }
 }
 // add_action( 'woocommerce_after_shipping_rate', 'postaqui_shipping_delivery_estimate');
