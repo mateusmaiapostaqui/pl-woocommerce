@@ -145,6 +145,9 @@ class Postaqui
 
         $return = curl_exec($process);
         $status = curl_getinfo($process, CURLINFO_HTTP_CODE);
+        $error = curl_error($process);
+
+        curl_close($process);
 
         if ($status == 0) {
             return ['error' => 1, 'message' => 'Não foi possível conectar-se com o Postaqui. Tente novamente mais tarde'];
@@ -154,19 +157,19 @@ class Postaqui
             if ($status == 401) {
                 return ['error' => 401, 'message' => 'Acesso não autorizado. Verifique se o seu token foi preenchido corretamente ou fale com a Postaqui'];
             }
-
-            $message = curl_error($process);
-            curl_close($process);
-            return ['error' => $status, 'message' => $message];
+            return ['error' => $status, 'message' => $error];
         }
 
         $return_decode = json_decode($return);
 
+        $this->debug($url);
+        $this->debug($headers);
+        $this->debug($params);
+        $this->debug($return);
+
         if (isset($return_decode->data->error)) {
             return ['error' => $return_decode->data->error, 'message' => $return_decode->data->message];
         }
-
-        curl_close($process);
 
         return json_decode($return);
     }
@@ -253,4 +256,19 @@ class Postaqui
     {
         return preg_replace("/[^0-9]/", "", $val);
     }
+
+    /**
+     * Insert data to debug
+     * @param mixed $data
+     * @return void
+     */
+    public function debug($data)
+    {
+        // error_log(
+        //     var_export($data, true). "\n",
+        //     3,
+        //     WC_POSTAQUI_DIR. '/debug.log'
+        // );
+    }
+
 }
