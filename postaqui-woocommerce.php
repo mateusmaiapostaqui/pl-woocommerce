@@ -3,20 +3,20 @@
 /**
  * Plugin Name:          Postaqui para WooCommerce
  * Description:          Adiciona método de entrega Postaqui à sua loja WooCommerce.
- * Author:               Augesystems,Phellipe K Ribeiro,Diego G P Lopes
+ * Author:               Augesystems, Phellipe K Ribeiro, Diego G P Lopes, Mateus Souza
  * Author URI:           https://www.augesystems.com.br,https://profiles.wordpress.org/pkelbert/,https://profiles.wordpress.org/diegpl/
- * Version:              1.1.0
+ * Version:              1.2.0
  * License:              GPLv2 or later
  * License URI:          https://www.gnu.org/licenses/gpl-2.0.html
  * WC requires at least: 3.0.0
- * WC tested up to:      4.8.0
+ * WC tested up to:      4.9.0
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WC_POSTAQUI_VERSION', '1.1.0');
+define('WC_POSTAQUI_VERSION', '1.2.0');
 define('WC_POSTAQUI_PLUGIN_FILE', __FILE__);
 define('WC_POSTAQUI_DIR', plugin_dir_path(__FILE__));
 define('WC_POSTAQUI_DIR_URL', plugin_dir_url(__FILE__));
