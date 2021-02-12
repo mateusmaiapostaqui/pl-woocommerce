@@ -1,4 +1,5 @@
 <?php
+
 /**
  * WooCommerce Postaqui Uninstall
  *
@@ -7,10 +8,10 @@
  * @version 3.0.0
  */
 
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit;
+if (!defined('WP_UNINSTALL_PLUGIN')) {
+    exit;
 }
 
 global $wpdb;
 
-$wpdb->query( "DELETE FROM {$wpdb->prefix}options where option_name like'%postaqui%'" );
+$wpdb->query("DELETE FROM {$wpdb->prefix}options where option_name like'%postaqui%'");
